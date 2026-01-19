@@ -1,0 +1,54 @@
+name: tagpr
+
+on:
+    push:
+        branches: ["main"]
+    # 手動実行でも確認したい場合は以下を有効化
+    workflow_dispatch:
+
+jobs:
+    tagpr:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+            pull-requests: write
+            issues: read
+        outputs:
+            pull_request: ${{ steps.tagpr.outputs.pull_request }}
+            tag: ${{ steps.tagpr.outputs.tag }}
+            base_tag: ${{ steps.tagpr.outputs.base_tag }}
+        steps:
+            - uses: actions/checkout@v5
+              with:
+                  # タグ計算や差分に必要なので深い履歴を取得
+                  fetch-depth: 0
+                  persist-credentials: false
+            - id: tagpr
+              uses: Songmu/tagpr@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            # デバッグ用（実運用で不要なら削除可）
+            - name: Show tagpr outputs
+              run: |
+                  echo "tag=${{ steps.tagpr.outputs.tag }}"
+                  echo "base_tag=${{ steps.tagpr.outputs.base_tag }}"
+
+    prepare-release-pr:
+        runs-on: ubuntu-latest
+        needs: [tagpr]
+        permissions:
+            contents: write
+        # 「PR が作られた && タグはまだ作られていない」時にだけ動かす
+        if: ${{ needs.tagpr.outputs.pull_request != '' && needs.tagpr.outputs.tag == '' }}
+        steps:
+            - uses: actions/checkout@v5
+              with:
+                  fetch-depth: 0
+
+            - name: Use PR info
+              run: |
+                  echo "PR JSON:"
+                  echo '${{ needs.tagpr.outputs.pull_request }}' | jq .
+                  echo "BASE TAG: ${{ needs.tagpr.outputs.base_tag }}"
+                  echo "NEW TAG (should be empty here): '${{ needs.tagpr.outputs.tag }}'"

@@ -6,9 +6,7 @@ on:
       - 'main'
 jobs:
   build:
-    runs-on:
-      - self-hosted
-      - linux
+    runs-on: ubuntu-latest
     steps:
       - name: test
         run: |

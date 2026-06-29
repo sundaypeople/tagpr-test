@@ -23,10 +23,19 @@ jobs:
                   # タグ計算や差分に必要なので深い履歴を取得
                   fetch-depth: 0
                   persist-credentials: false
+            - name: Generate token
+              id: generate_token
+              env:
+                  OPENSSL_CONF: /dev/null
+              uses: getsentry/action-github-app-token@d4b5da6c5e37703f8c3b3e43abb5705b46e159cc # v3
+              with:
+                  app_id: ${{ secrets.APP_ID }}
+                  private_key: ${{ secrets.APP_PRIVATE_KEY }}
+
             - id: tagpr
               uses: Songmu/tagpr@v1
               env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
 
             # デバッグ用（実運用で不要なら削除可）
             - name: Show tagpr outputs

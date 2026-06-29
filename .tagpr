@@ -58,3 +58,6 @@
 	vPrefix = true
 	releaseBranch = main
 	versionFile = -
+	changelog = false
+	minorLabels= minor-release
+	majorLabels = major-release

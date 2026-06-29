@@ -56,8 +56,11 @@ jobs:
                   fetch-depth: 0
 
             - name: Use PR info
+              env:
+                PR_JSON: ${{ needs.tagpr.outputs.pull_request }}
               run: |
-                  echo "PR JSON:"
-                  echo '${{ needs.tagpr.outputs.pull_request }}' | jq .
-                  echo "BASE TAG: ${{ needs.tagpr.outputs.base_tag }}"
-                  echo "NEW TAG (should be empty here): '${{ needs.tagpr.outputs.tag }}'"
+                echo "PR JSON:"
+                # 環境変数をダブルクォーテーションで囲んで呼び出す
+                echo "$PR_JSON" | jq .
+                echo "BASE TAG: ${{ needs.tagpr.outputs.base_tag }}"
+                echo "NEW TAG (should be empty here): '${{ needs.tagpr.outputs.tag }}'"
